@@ -42,7 +42,6 @@ endmodule
 
 module clk_div(
     input clk_master,
-    input rst,
     output reg clk_1Hz
 );
 
@@ -53,24 +52,18 @@ parameter [31:0] clock_count = 32'd50000000; // 50 Mil
 
 reg [31:0] clock_div_reg;
 
-always @(posedge clk_master or posedge rst)
+always @(posedge clk_master)
 begin
-    if (rst)
-        clock_div_reg <= 32'b0;
-    else if (clock_div_reg == clock_count - 1)
+    if (clock_div_reg == clock_count - 1)
         clock_div_reg <= 32'b0;
     else
         clock_div_reg <= clock_div_reg + 1;
 end
 
-always @ (posedge(clk_master), posedge(rst))
+always @ (posedge clk_master)
 begin
-    if (rst == 1'b1)
-        clk_1Hz <= 1'b0;
-    else if (clock_div_reg == clock_count - 1)
+    if (clock_div_reg == clock_count - 1)
         clk_1Hz <= ~clk_1Hz;
-    else
-        clk_1Hz <= clk_1Hz;
 end
     endmodule
 
@@ -88,7 +81,6 @@ module master_counter(
    
     clk_div divider (
         .clk_master (clk),
-        .rst        (btnD),
         .clk_1Hz    (clk_1Hz_wire)   // output plugs into the wire
     );
 
@@ -104,27 +96,28 @@ endmodule
 // Simulation-only version, never synthesized
 module clk_div_sim(
     input clk_master,
-    input rst,
     output reg clk_1Hz
 );
 parameter [31:0] clock_count = 32'd10;  // tiny value, sim only
 reg [31:0] clock_div_reg;
 
-always @(posedge clk_master or posedge rst)
+// Initialize registers for simulation
+initial begin
+    clk_1Hz = 1'b0;
+    clock_div_reg = 32'b0;
+end
+
+always @(posedge clk_master)
 begin
-    if (rst)
-        clock_div_reg <= 32'b0;
-    else if (clock_div_reg == clock_count - 1)
+    if (clock_div_reg == clock_count - 1)
         clock_div_reg <= 32'b0;
     else
         clock_div_reg <= clock_div_reg + 1;
 end
 
-always @(posedge clk_master or posedge rst)
+always @(posedge clk_master)
 begin
-    if (rst)
-        clk_1Hz <= 1'b0;
-    else if (clock_div_reg == clock_count - 1)
+    if (clock_div_reg == clock_count - 1)
         clk_1Hz <= ~clk_1Hz;
 end
 endmodule

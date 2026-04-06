@@ -29,7 +29,6 @@ module test_bench;
     // sim version of divider
     clk_div_sim divider (
         .clk_master (clk),
-        .rst        (rst),
         .clk_1Hz    (clk_1Hz_wire)
     );
 
